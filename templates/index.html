@@ -1,0 +1,59 @@
+<html>
+
+<style type="text/css">
+
+ #maptable td.white {color: #ffffff; font-size: 50px;}
+
+ body {
+  color: white;
+}
+
+ table {
+ border-collapse: collapse;
+ }
+
+ table td {
+     border: 5px solid white;
+ }
+</style>
+
+<body bgcolor="#111111">
+    <img src="/static/KR_LOGO_NEW_WHITE.png">
+    <br>{{ timeleft }}<br>
+    <table id="maptable">
+        <tr>
+            {% for serv in servs %}
+                <td class="white">Server {{ serv[0] }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for serv in servs %}
+                <td class="white">Current map:<br><span style="color:#aa0">Kack</span><span style="color:#05a">y Re</span><span style="color:#09a">lo</span><span style="color:#6a0">ad</span><span style="color:#aa0">ed </span><span style="color:#4f0">#{{ serv[1] }}</span></td>
+            {% endfor %}
+        </tr>
+    </table>
+<!-- Current time: {{ curtime }} - Next map will be played at {{ nextmaptime }}<br>-->
+<br>
+Search when map is played next (input ID)
+<form method="POST">
+    <input name="map">
+    <input type="submit" value="Search">
+</form>
+{% if searched == True %}
+    {% if badinput == True %}
+        Please provide a ID that is in the current map pool!
+    {% else %}
+        Map <span style="color:#aa0">Kack</span><span style="color:#05a">y Re</span><span style="color:#09a">lo</span><span style="color:#6a0">ad</span><span style="color:#aa0">ed </span><span style="color:#4f0">#{{ searchtext }}</span>
+        will be played next:
+        <table class="white">
+        {% for d in deltas %}
+            <tr><td>{{ d[0] }}</td><td>{{ d[1] }}</td></tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+{% endif %}
+<br><br><br>
+No guarantees given ;) &copy; 2021 corkscrew<br>
+Thanks to KK Krew!
+</body>
+</html>

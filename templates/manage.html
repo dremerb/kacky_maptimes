@@ -1,0 +1,58 @@
+<html>
+<style type="text/css">
+
+ #maptable td.white {color: #ffffff; font-size: 50px;}
+
+ body {
+  color: white;
+}
+
+ table {
+ border-collapse: collapse;
+ }
+
+ table td {
+     border: 5px solid white;
+ }
+</style>
+
+<body bgcolor="#111111">
+<form method="POST">
+    <table id="maptable">
+        <tr>
+            <td></td>
+            {% for serv in servs %}
+                <td>{{ serv }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td>Reference date (Day.Month.Year)</td>
+            {% for d in dates %}
+                <td><input name="date{{ d[0] }}" value="{{ d[1] }}"></td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td>Time when map was switched (HH:MM)</td>
+            {% for t in times %}
+                <td><input name="time{{ t[0] }}" value="{{ t[1] }}"></td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td>Map that was played at given time</td>
+            {% for m in maps %}
+                <td><input name="map{{ m[0] }}" value="{{ m[1] }}"></td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td></td>
+            {% for serv in servs %}
+                <td><input name="del_serv" type="submit" value="Remove {{ serv }}"></td>
+            {% endfor %}
+        </tr>
+    </table>
+Password: <input name="passwd" type="password"><br>
+<input name="save" type="submit" value="Save">
+<input name="add_serv" type="submit" value="Add Server">
+</form>
+</body>
+</html>
