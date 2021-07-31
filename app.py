@@ -1,5 +1,6 @@
 import datetime
 import os
+import logging
 
 import yaml
 import flask
@@ -10,6 +11,7 @@ MAPIDS = (76, 150)
 SERVERS = {}
 config = {}
 timelimit = 10
+logger = None
 
 
 def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
@@ -116,12 +118,13 @@ def on_map_play_search():
 @app.before_first_request
 def do_something_only_once():
     global SERVERS, config, timelimit
-    if os.path.isfile("servers.yaml"):
-        with open("servers.yaml", "r") as yamlfile:
+    if os.path.isfile(os.path.join(os.path.dirname(__file__), "servers.yaml")):
+        with open(os.path.join(os.path.dirname(__file__), "servers.yaml"), "r") as yamlfile:
+            logger.info("Reading server configuration")
             SERVERS = yaml.load(yamlfile, Loader=yaml.FullLoader)
     else:
         SERVERS[f"Server 1"] = {"timestamp": datetime.datetime.now(), "map": 76}
-    with open("config.yaml", "r") as conffile:
+    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
         config = yaml.load(conffile, Loader=yaml.FullLoader)
     # check if we are in phase 2
     if datetime.datetime.now() > datetime.datetime.strptime(config["phase2start"], "%d.%m.%Y %H:%M"):
@@ -151,6 +154,7 @@ def manage_servers():
 def manage_action():
     global SERVERS
     if flask.request.form["passwd"] != config["adminpwd"]:
+        logger.error("Bad password provided!")
         return flask.render_template('error.html', error="Bad Password!")
     if 'del_serv' in flask.request.form:
         # We want to remove a server. Get server name by truncating "Remove " from button value.
@@ -162,11 +166,13 @@ def manage_action():
             print(f"Renaming '{serv}' to 'Server {idx}'")
             servers_tmp[f"Server {idx+1}"] = SERVERS[serv]
         SERVERS = servers_tmp
+        logger.info(f"Removed server '{serv_name}' and fixed server namings")
     if 'add_serv' in flask.request.form:
         # Adding a new server to the SERVERS dict. Keys are sorted by ascending IDs, therefore just check last entry
         # for ID and increment
         new_index = int(list(SERVERS.keys())[len(SERVERS.keys())-1].split(" ")[1])
         SERVERS[f"Server {new_index+1}"] = {"timestamp": datetime.datetime.now(), "map": 76}
+        logger.info(f"Added server 'Server {new_index+1}'")
     if "save" in flask.request.form:
         # Read all fields and store them in SERVERS dict
         for idx, serv in enumerate(SERVERS.keys()):
@@ -186,12 +192,14 @@ def manage_action():
                 return flask.render_template('error.html', error="Faulty input for time or date! Try again!")
             # Set SERVERS
             SERVERS[serv] = {"timestamp": timestamp, "map": map}
+            logger.info("Changed server configuration")
         # Dump SERVERS dict, so it can be reloaded
-        with open("servers.yaml", "w+") as yamlfile:
+        with open(os.path.join(os.path.dirname(__file__), "servers.yaml"), "w+") as yamlfile:
             yaml.dump(SERVERS, yamlfile, default_flow_style=False)
-    return flask.redirect('manage')
+    return manage_servers()
 
 
 if __name__ == '__main__':
-    app.config.from_object('config.FlaskConfig')
-    app.run()
+    logger = logging.Logger("KKmaptimes")
+    logger.info("Starting application.")
+    app.run(host="0.0.0.0", port="5005", debug=True)
