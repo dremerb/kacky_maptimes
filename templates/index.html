@@ -20,16 +20,42 @@
   <body>
     <div class="container">
       <img id="header-image" src="/static/KR_LOGO_NEW_WHITE.png" />
-      <!--       <p>{{ timeleft }}</p> -->
-      <h1 style="text-align: center">Map Schedule</h1>
-      <h3 id="time-left" style="text-align: center">The {{ timeleft }}</h3>
+      <h1 style="text-align: center; margin-bottom: 0">Map Schedule</h1>
+      <p id="time-left">
+        {% if timeleft[3] == 1 %}
+        <span id="time-title">Time left:</span>
+
+        <span class="time">{{ timeleft[0] }}</span>
+        <span>Days</span>
+
+        <span class="time-divider"> / </span>
+
+        <span class="time">{{ timeleft[1] }}</span>
+        <span>Hours</span>
+
+        <span class="time-divider"> / </span>
+
+        <span class="time">{{ timeleft[2] }}</span>
+        <span>Minutes</span>
+
+        {% else %}
+        <span>The Competition is over!</span>
+        {% endif %}
+      </p>
+
       <section>
-        <h3>Current Maps</h3>
+        <h2>
+          <img class="icon" src="/static/content-delivery-network.svg" />Current
+          Maps
+        </h2>
         <p>Here are the maps currently being played!</p>
         <div class="server-grid">
           {% for serv in servs %}
           <div class="server-card">
-            <h3>#{{ serv[0] }}</h3>
+            <h3>
+              <img class="icon-small" src="/static/bare-metal-server.svg" />{{
+              serv[0] }}
+            </h3>
             <p>
               <span style="color: #aa0">Kack</span
               ><span style="color: #05a">y Re</span
@@ -43,7 +69,7 @@
         </div>
       </section>
       <section>
-        <h3>Search for a map</h3>
+        <h2><img class="icon" src="/static/search.svg" />Search for a map</h2>
         <p>Find when a map will next be played.</p>
         <form id="map-search" method="POST">
           <label for="map">Map #</label>
@@ -70,23 +96,40 @@
         <div class="server-grid">
           {% for d in deltas %}
           <div class="server-card">
-            <h3>{{d[0]}}</h3>
+            <h3>
+              <img
+                class="icon-small"
+                src="/static/bare-metal-server.svg"
+              />{{d[0]}}
+            </h3>
             <p>{{d[1]}}</p>
           </div>
           {% endfor %}
         </div>
       </section>
       <div>
-        <p style="font-size:medium;"><strong>DISCLAIMER: </strong>The Application is not gathering any Data from the Kacky Servers. It only works by manually imitating the cycles on the servers. There might be smaller or bigger discrepancies.</p>
-        </div>
+        <p style="font-size: medium">
+          <strong>DISCLAIMER: </strong>The Application is not gathering any Data
+          from the Kacky Servers. It only works by manually imitating the cycles
+          on the servers. There might be smaller or bigger discrepancies.
+        </p>
+      </div>
     </div>
 
-    
-
     <footer>
-        <p>© 2021  |  corkscrew, adralonter and benslv
-            |  Thanks to Kackiest Kacky Krew!</p>
-      <iframe style="margin-top: 4px;" src="https://ghbtns.com/github-btn.html?user=dremerb&repo=kacky_maptimes&type=watch&count=true&size=small&v=2" frameborder="0" scrolling="0" width="170" height="30" title="Github Repo"></iframe>
+      <p>
+        © 2021 | corkscrew, adralonter and benslv | Thanks to Kackiest Kacky
+        Krew!
+      </p>
+      <iframe
+        style="margin-top: 4px"
+        src="https://ghbtns.com/github-btn.html?user=dremerb&repo=kacky_maptimes&type=watch&count=true&size=small&v=2"
+        frameborder="0"
+        scrolling="0"
+        width="170"
+        height="30"
+        title="Github Repo"
+      ></iframe>
     </footer>
   </body>
 </html>
