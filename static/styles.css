@@ -58,6 +58,8 @@ h4 {
   font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   letter-spacing: 0.3em;
   text-transform: uppercase;
+  font-weight: 300;
+  font-style: italic;
 }
 
 h1 {
@@ -89,6 +91,20 @@ section h2 {
   margin: 0 auto;
 }
 
+.icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 2rem;
+  margin-bottom: -3px;
+}
+
+.icon-small {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+  margin-bottom: -5px;
+}
+
 #header-image {
   max-width: 750px;
   display: block;
@@ -97,8 +113,26 @@ section h2 {
 
 #time-left {
   text-align: center;
-  font-style: italic;
+  text-transform: uppercase;
   font-weight: 400;
+  letter-spacing: 0.2em;
+}
+
+#time-title {
+  margin-right: 1.5rem;
+}
+
+.time {
+  font-weight: 700;
+  font-size: 40px;
+  font-style: italic;
+  letter-spacing: normal;
+}
+
+.time-divider {
+  font-weight: 100;
+  margin: 0 1rem;
+  font-size: 40px;
 }
 
 .server-grid {
