@@ -102,13 +102,13 @@ def on_map_play_search():
     if search_map_id < MAPIDS[0] or search_map_id > MAPIDS[1]:
         # not in current map pool
         return flask.render_template('index.html', servs=list(zip(SERVERS.keys(), curmaps)), curtime=curtimestr,
-                                     nextmaptime=nextmaptimestr, searched=True, badinput=True)
+                                     nextmaptime=nextmaptimestr, searched=True, badinput=True, timeleft=timeleft)
     # input seems ok, try to find next time map is played
     deltas = which_time_is_map_played(datetime.datetime.now(), search_map_id)
     deltas_str = list(map(lambda d: minutes_to_hourmin_str(d), deltas))
 
     return flask.render_template('index.html', servs=list(zip(SERVERS.keys(), curmaps)), curtime=curtimestr,
-                                 nextmaptime=nextmaptimestr, searched=True, searchtext=search_map_id,
+                                 nextmaptime=nextmaptimestr, searched=True, searchtext=search_map_id, timeleft=timeleft,
                                  deltas=list(zip(SERVERS.keys(), deltas_str)))
 
 
