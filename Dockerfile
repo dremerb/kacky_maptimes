@@ -1,12 +1,12 @@
-FROM python
+FROM python:3
 
 WORKDIR /opt/kack
 
 COPY . /opt/kack
 
-pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 EXPOSE 5000
 
 ENV FLASK_APP=app
-CMD ["flask run"]
+ENTRYPOINT ["flask", "run", "--host", "0.0.0.0"]
