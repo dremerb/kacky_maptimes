@@ -47,7 +47,7 @@ def which_map_is_cur_played(timestamp: datetime.datetime):
         # adjust for time lost in map loading
         #                 sec lost in maploading
         adjust_fact = (n_changes * config["mapchangetime_s"]) // timelimit // 60
-        new_id = MAPIDS[0] + (serv["map"] + n_changes - adjust_fact) % (MAPIDS[1] + 1 - MAPIDS[0])
+        new_id = MAPIDS[0] + (serv["map"] + n_changes - adjust_fact) % (MAPIDS[1] - MAPIDS[0] + 2)  # +2 = +1 for 0-index of map count, +1 for modulus offset
         res.append(new_id)
     return res
 
