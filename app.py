@@ -1,6 +1,7 @@
 import datetime
 import os
 import logging
+import requests
 
 import yaml
 import flask
@@ -43,11 +44,11 @@ def which_map_is_cur_played(timestamp: datetime.datetime):
     res = []
     # Get number of map changes since last known map on server
     for serv in SERVERS.values():
-        n_changes = int((timestamp - serv["timestamp"]).total_seconds() / 60 / timelimit)
+        n_changes = int((timestamp - serv["update"]).total_seconds() / 60 / timelimit)
         # adjust for time lost in map loading
         #                 sec lost in maploading
         adjust_fact = (n_changes * config["mapchangetime_s"]) // timelimit // 60
-        new_id = MAPIDS[0] + (serv["map"] + n_changes - adjust_fact) % (MAPIDS[1] - MAPIDS[0] + 2)  # +2 = +1 for 0-index of map count, +1 for modulus offset
+        new_id = MAPIDS[0] + (serv["mapid"] + n_changes - adjust_fact) % (MAPIDS[1] - MAPIDS[0] + 2)  # +2 = +1 for 0-index of map count, +1 for modulus offset
         res.append(new_id)
     return res
 
@@ -82,7 +83,8 @@ def index():
     :return:
     """
     curtimestr, nextmaptimestr, curmaps, timeleft = pagedata()
-    return flask.render_template('index.html', servs=list(zip(SERVERS.keys(), curmaps)), curtime=curtimestr,
+    servernames = list(map(lambda s: s["name"], SERVERS.values()))
+    return flask.render_template('index.html', servs=list(zip(servernames, curmaps)), curtime=curtimestr,
                                  nextmaptime=nextmaptimestr, timeleft=timeleft)
 
 
@@ -94,39 +96,35 @@ def on_map_play_search():
     """
     curtimestr, nextmaptimestr, curmaps, timeleft = pagedata()
     search_map_id = flask.request.form['map']
+    servernames = list(map(lambda s: s["name"], SERVERS.values()))
     # check if input is integer
     try:
         search_map_id = int(search_map_id)
     except ValueError:
         # input is not a integer, return error message
-        return flask.render_template('index.html', servs=list(zip(SERVERS.keys(), curmaps)), curtime=curtimestr,
+        return flask.render_template('index.html', servs=list(zip(servernames, curmaps)), curtime=curtimestr,
                                      nextmaptime=nextmaptimestr, searched=True, badinput=True, timeleft=timeleft)
     # check if input is in current map pool
     if search_map_id < MAPIDS[0] or search_map_id > MAPIDS[1]:
         # not in current map pool
-        return flask.render_template('index.html', servs=list(zip(SERVERS.keys(), curmaps)), curtime=curtimestr,
+        return flask.render_template('index.html', servs=list(zip(servernames, curmaps)), curtime=curtimestr,
                                      nextmaptime=nextmaptimestr, searched=True, badinput=True, timeleft=timeleft)
     # input seems ok, try to find next time map is played
     deltas = which_time_is_map_played(datetime.datetime.now(), search_map_id)
     deltas_str = list(map(lambda d: minutes_to_hourmin_str(d), deltas))
 
-    return flask.render_template('index.html', servs=list(zip(SERVERS.keys(), curmaps)), curtime=curtimestr,
+    return flask.render_template('index.html', servs=list(zip(servernames, curmaps)), curtime=curtimestr,
                                  nextmaptime=nextmaptimestr, searched=True, searchtext=search_map_id, timeleft=timeleft,
-                                 deltas=list(zip(SERVERS.keys(), deltas_str)))
-
+                                 deltas=list(zip(servernames, deltas_str)))
 
 
 @app.before_first_request
 def do_something_only_once():
     global SERVERS, config, timelimit
-    if os.path.isfile(os.path.join(os.path.dirname(__file__), "servers.yaml")):
-        with open(os.path.join(os.path.dirname(__file__), "servers.yaml"), "r") as yamlfile:
-            #logger.info("Reading server configuration")
-            SERVERS = yaml.load(yamlfile, Loader=yaml.FullLoader)
-    else:
-        SERVERS[f"Server 1"] = {"timestamp": datetime.datetime.now(), "map": 76}
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
         config = yaml.load(conffile, Loader=yaml.FullLoader)
+    # Set SERVERS var
+    update_mapinfo()
     # check if we are in phase 2
     if datetime.datetime.now() > datetime.datetime.strptime(config["phase2start"], "%d.%m.%Y %H:%M"):
         timelimit = config["phase2timelimit"]
@@ -134,70 +132,21 @@ def do_something_only_once():
         timelimit = config["phase1timelimit"]
 
 
-@app.route('/manage')
-def manage_servers():
-    dates = []
-    times = []
-    maps = []
-    for serv in SERVERS.values():
-        dates.append(serv["timestamp"].strftime("%d.%m.%Y"))
-        times.append(serv["timestamp"].strftime("%H:%M"))
-        maps.append(serv["map"])
-    # we need UIDs for the text field names (+1 because first col is constant hardcoded string
-    ids = list(range(len(SERVERS.keys())))
-    dates = zip(ids, dates)
-    times = zip(ids, times)
-    maps = zip(ids, maps)
-    return flask.render_template('manage.html', servs=SERVERS.keys(), dates=dates, times=times, maps=maps)
-
-
-@app.route('/manage', methods=['POST'])
-def manage_action():
+def update_mapinfo():
     global SERVERS
-    if flask.request.form["passwd"] != config["adminpwd"]:
-        #logger.error("Bad password provided!")
-        return flask.render_template('error.html', error="Bad Password!")
-    if 'del_serv' in flask.request.form:
-        # We want to remove a server. Get server name by truncating "Remove " from button value.
-        serv_name = flask.request.form["del_serv"][7:]
-        SERVERS.pop(serv_name)
-        # Server names might have inconsistent indexes, fix that
-        servers_tmp = {}
-        for idx, serv in enumerate(SERVERS.keys()):
-            print(f"Renaming '{serv}' to 'Server {idx}'")
-            servers_tmp[f"Server {idx+1}"] = SERVERS[serv]
-        SERVERS = servers_tmp
-        #logger.info(f"Removed server '{serv_name}' and fixed server namings")
-    if 'add_serv' in flask.request.form:
-        # Adding a new server to the SERVERS dict. Keys are sorted by ascending IDs, therefore just check last entry
-        # for ID and increment
-        new_index = int(list(SERVERS.keys())[len(SERVERS.keys())-1].split(" ")[1])
-        SERVERS[f"Server {new_index+1}"] = {"timestamp": datetime.datetime.now(), "map": 76}
-        #logger.info(f"Added server 'Server {new_index+1}'")
-    if "save" in flask.request.form:
-        # Read all fields and store them in SERVERS dict
-        for idx, serv in enumerate(SERVERS.keys()):
-            # Read all fields
-            date = flask.request.form[f"date{idx}"]
-            time = flask.request.form[f"time{idx}"]
-            # Check if they are in correct format
-            try:
-                map = int(flask.request.form[f"map{idx}"])
-            except ValueError:
-                return flask.render_template('error.html', error="Faulty input for map! Try again!")
-            if map < MAPIDS[0] or map > MAPIDS[1]:
-                return flask.render_template('error.html', error="Faulty input for map! Try again!")
-            try:
-                timestamp = datetime.datetime.strptime(f"{date} {time}", "%d.%m.%Y %H:%M")
-            except ValueError:
-                return flask.render_template('error.html', error="Faulty input for time or date! Try again!")
-            # Set SERVERS
-            SERVERS[serv] = {"timestamp": timestamp, "map": map}
-            #logger.info("Changed server configuration")
-        # Dump SERVERS dict, so it can be reloaded
-        with open(os.path.join(os.path.dirname(__file__), "servers.yaml"), "w+") as yamlfile:
-            yaml.dump(SERVERS, yamlfile, default_flow_style=False)
-    return manage_servers()
+    try:
+        krdata = requests.get("https://kackiestkacky.com/api/serverinfo.php").json()
+    except ConnectionError:
+        flask.render_template('error.html', error="Could not contact KR server. RIP!")
+    tmpdict = {}
+    for server in krdata.keys():
+        d = krdata[server]
+        mapid = d["MapName"].split("#")[1]
+        serverid = d["ServerId"]
+        servname = d["ServerName"]
+        tmpdict[serverid] = {"name": servname, "mapid": int(mapid), "update": datetime.datetime.now()}
+    del SERVERS
+    SERVERS = tmpdict.copy()
 
 
 if __name__ == '__main__':

@@ -2,5 +2,5 @@ phase1timelimit: 10
 phase2start: 15.08.2021 18:00
 phase2timelimit: 20
 compend: 31.08.2021 18:00
-adminpwd: Blabla814!
-mapchangetime_s: 30
+mapchangetime_s: 45
+cachetime: 60 # seconds
