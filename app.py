@@ -32,6 +32,8 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
 
 
 def minutes_to_hourmin_str(minutes):
+    if minutes < 10:
+        return f"less than 10 minutes"
     return f"{int(minutes/60):0>2d} hours {minutes%60:0>2d} minutes"
 
 
