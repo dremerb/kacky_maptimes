@@ -1,10 +1,9 @@
 # kacky_maptimes
-Webtool for KR2 - Check which maps are currently played and when a map will be played again.
+Webtool for KR2 - Check which maps are currently played and when a map will be played again. Also can calculate, at how long it will be until a map gets queued.
 
 # How to use
-Index page shows all data relevant for normal users.
-There is a management site in http://url/manage is visible publicly, but to save modifications it is required to enter the password from config.yaml.
+Start it. Use it. No configuration needed, as data is pulled automatically from KR Servers.
+Actually.. Don't "Start it. Use it.", just "Use it" at [https://kacky.dingens.me](https://kacky.dingens.me).
 
 # Warnings
-1. This is in beta and untested. Shown results might be bs.
-2. Deployment options are borked currently. Dockerfile does build a container, but I hate Docker, Docker hates me, did not get it connected wo network - and Flask config doesn't work either, might require some hardcoding of values. Might fix when I was able to test that tool actually works.
+1. Dockerfile not thoroughly tested. Had it running once, but I don't really use Docker. You'll need to map a port to 5000 in the container.
