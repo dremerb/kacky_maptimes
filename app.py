@@ -17,7 +17,8 @@ logger = None
 mapcache = {}
 
 def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
-    curmaps = which_map_is_cur_played(timestamp)
+    get_mapinfo()
+    curmaps = list(map(lambda s: s["mapid"], SERVERS.values()))
     deltas = []
     for idx, serv in enumerate(curmaps):
         # how many map changes are needed until map is juked?
@@ -37,25 +38,6 @@ def minutes_to_hourmin_str(minutes):
     return f"{int(minutes/60):0>2d} hours {minutes%60:0>2d} minutes"
 
 
-def which_map_is_cur_played(timestamp: datetime.datetime):
-    """
-    Calculates the map that is played at the given timestamp
-    :param timestamp: Timestamp for that shall be determined which map is playing
-    :return: list that contains map played at given timestamp
-    """
-    res = []
-    get_mapinfo()
-    # Get number of map changes since last known map on server
-    for serv in SERVERS.values():
-        n_changes = int((timestamp - serv["update"]).total_seconds() / 60 / timelimit)
-        # adjust for time lost in map loading
-        #                 sec lost in maploading
-        adjust_fact = (n_changes * config["mapchangetime_s"]) // timelimit // 60
-        new_id = MAPIDS[0] + (serv["mapid"] + n_changes - adjust_fact) % (MAPIDS[1] - MAPIDS[0] + 2)  # +2 = +1 for 0-index of map count, +1 for modulus offset
-        res.append(new_id)
-    return res
-
-
 def pagedata():
     """
     Prepare most data to show on the page
@@ -69,7 +51,8 @@ def pagedata():
         nextmaptimestr = f"{curtime.hour + 1:0>2d}:00"
     else:
         nextmaptimestr = f"{curtime.hour:0>2d}:{(curtime.minute // 10 + 1) * 10:0>2d}"
-    curmaps = which_map_is_cur_played(curtime)
+    get_mapinfo()
+    curmaps = list(map(lambda s: s["mapid"], SERVERS.values()))
     ttl = datetime.datetime.strptime(config["compend"], "%d.%m.%Y %H:%M") - curtime
     if ttl.days < 0 or ttl.seconds < 0:
         timeleft = (abs(ttl.days), abs(int(ttl.seconds // 3600)),  abs(int(ttl.seconds // 60) % 60), -1)
