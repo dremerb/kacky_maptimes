@@ -12,7 +12,7 @@ MAPIDS = (76, 150)
 SERVERS = {}
 config = {}
 timelimit = 10
-#logger = None
+logger = None
 
 mapcache = {}
 
@@ -124,11 +124,13 @@ def on_map_play_search():
 @app.before_first_request
 def do_something_only_once():
     global SERVERS, config, timelimit
+    logger.info("Initializing Data")
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
         config = yaml.load(conffile, Loader=yaml.FullLoader)
     # Set SERVERS var
     get_mapinfo()
     # check if we are in phase 2
+    # TODO: FIX, this has to be checked somewhere else!
     if datetime.datetime.now() > datetime.datetime.strptime(config["phase2start"], "%d.%m.%Y %H:%M"):
         timelimit = config["phase2timelimit"]
     else:
@@ -139,11 +141,12 @@ def get_mapinfo():
     global SERVERS
 
     # Update SERVERS every minute
-    if SERVERS.values()[0]["uptime"] < datetime.datetime.now() + datetime.timedelta(minutes=1.0):
-        # Return if data is not old enough yet
-        print("no update for SERVERS needed!")
-        return
-    print("updating SERVERS")
+    if SERVERS != {}:
+        if list(SERVERS.values())[0]["update"] < datetime.datetime.now() + datetime.timedelta(minutes=1.0):
+            # Return if data is not old enough yet
+            logger.info("No update for SERVERS needed!")
+            return
+    logger.info("Updating SERVERS.")
     try:
         krdata = requests.get("https://kackiestkacky.com/api/serverinfo.php").json()
     except ConnectionError:
@@ -160,7 +163,7 @@ def get_mapinfo():
 
 
 if __name__ == '__main__':
-    ##logger = logging.#logger("KKmaptimes")
-    ##logger.info("Starting application.")
-    #app.run(host="127.0.0.1", port=5005, debug=True)
-    app.run()
+    logger = logging.getLogger("KRmaptimes")
+    logger.info("Starting application.")
+    app.run(host="0.0.0.0", port=5005)
+    #app.run()
