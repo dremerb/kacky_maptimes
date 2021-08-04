@@ -107,7 +107,7 @@ def on_map_play_search():
 @app.before_first_request
 def do_something_only_once():
     global SERVERS, config, timelimit
-    logger.info("Initializing Data")
+    #logger.info("Initializing Data")
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
         config = yaml.load(conffile, Loader=yaml.FullLoader)
     # Set SERVERS var
@@ -122,17 +122,19 @@ def do_something_only_once():
 
 def get_mapinfo():
     global SERVERS
-
+    print(SERVERS)
+    print(datetime.datetime.now())
     # Update SERVERS every minute
     if SERVERS != {}:
-        if list(SERVERS.values())[0]["update"] < datetime.datetime.now() + datetime.timedelta(minutes=1.0):
+        if datetime.datetime.now() - list(SERVERS.values())[0]["update"] < datetime.timedelta(minutes=1.0):
             # Return if data is not old enough yet
-            logger.info("No update for SERVERS needed!")
+            #logger.info("No update for SERVERS needed!")
             return
-    logger.info("Updating SERVERS.")
+    #logger.info("Updating SERVERS.")
     try:
         krdata = requests.get("https://kackiestkacky.com/api/serverinfo.php").json()
     except ConnectionError:
+        #logger.error("Could not connect to KR API!")
         flask.render_template('error.html', error="Could not contact KR server. RIP!")
     tmpdict = {}
     for server in krdata.keys():
@@ -141,12 +143,15 @@ def get_mapinfo():
         serverid = d["ServerId"]
         servname = d["ServerName"]
         tmpdict[serverid] = {"name": servname, "mapid": int(mapid), "update": datetime.datetime.now()}
+    print(SERVERS)
     del SERVERS
     SERVERS = tmpdict.copy()
+    print(SERVERS)
+    1
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger("KRmaptimes")
-    logger.info("Starting application.")
+    #logger = logging.getLogger("KRmaptimes")
+    #logger.info("Starting application.")
     app.run(host="0.0.0.0", port=5005)
     #app.run()
