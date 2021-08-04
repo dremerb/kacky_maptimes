@@ -44,6 +44,7 @@ def which_map_is_cur_played(timestamp: datetime.datetime):
     :return: list that contains map played at given timestamp
     """
     res = []
+    get_mapinfo()
     # Get number of map changes since last known map on server
     for serv in SERVERS.values():
         n_changes = int((timestamp - serv["update"]).total_seconds() / 60 / timelimit)
@@ -126,7 +127,7 @@ def do_something_only_once():
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
         config = yaml.load(conffile, Loader=yaml.FullLoader)
     # Set SERVERS var
-    update_mapinfo()
+    get_mapinfo()
     # check if we are in phase 2
     if datetime.datetime.now() > datetime.datetime.strptime(config["phase2start"], "%d.%m.%Y %H:%M"):
         timelimit = config["phase2timelimit"]
@@ -134,8 +135,15 @@ def do_something_only_once():
         timelimit = config["phase1timelimit"]
 
 
-def update_mapinfo():
+def get_mapinfo():
     global SERVERS
+
+    # Update SERVERS every minute
+    if SERVERS.values()[0]["uptime"] < datetime.datetime.now() + datetime.timedelta(minutes=1.0):
+        # Return if data is not old enough yet
+        print("no update for SERVERS needed!")
+        return
+    print("updating SERVERS")
     try:
         krdata = requests.get("https://kackiestkacky.com/api/serverinfo.php").json()
     except ConnectionError:
@@ -154,5 +162,5 @@ def update_mapinfo():
 if __name__ == '__main__':
     ##logger = logging.#logger("KKmaptimes")
     ##logger.info("Starting application.")
-    #app.run(host="0.0.0.0", port="5005", debug=True)
+    #app.run(host="127.0.0.1", port=5005, debug=True)
     app.run()
