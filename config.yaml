@@ -1,6 +1,19 @@
+# FLASK PARAMETERS
+port: 5005
+bind_hosts: 0.0.0.0
+
+# APPLICATION PARAMETERS
+cachetime: 60 # seconds
+mapchangetime_s: 45
+
+# KR META INFO
 phase1timelimit: 10
 phase2start: 15.08.2021 18:00
 phase2timelimit: 20
 compend: 31.08.2021 18:00
-mapchangetime_s: 45
-cachetime: 60 # seconds
+
+# LOGGING
+logtype: FILE # STDOUT, FILE
+logfile: flask.log
+loglevel: INFO # DEBUG, INFO, WARNING, ERROR, CRITICAL
+access_logging: 1 # 0, 1

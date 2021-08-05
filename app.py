@@ -107,9 +107,7 @@ def on_map_play_search():
 @app.before_first_request
 def do_something_only_once():
     global SERVERS, config, timelimit
-    #logger.info("Initializing Data")
-    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
-        config = yaml.load(conffile, Loader=yaml.FullLoader)
+    logger.info("Initializing Data")
     # Set SERVERS var
     get_mapinfo()
     # check if we are in phase 2
@@ -122,19 +120,17 @@ def do_something_only_once():
 
 def get_mapinfo():
     global SERVERS
-    print(SERVERS)
-    print(datetime.datetime.now())
     # Update SERVERS every minute
     if SERVERS != {}:
-        if datetime.datetime.now() - list(SERVERS.values())[0]["update"] < datetime.timedelta(minutes=1.0):
+        if datetime.datetime.now() - list(SERVERS.values())[0]["update"] < datetime.timedelta(seconds=config["cachetime"]):
             # Return if data is not old enough yet
-            #logger.info("No update for SERVERS needed!")
+            logger.info("No update for SERVERS needed!")
             return
-    #logger.info("Updating SERVERS.")
+    logger.info("Updating SERVERS.")
     try:
         krdata = requests.get("https://kackiestkacky.com/api/serverinfo.php").json()
     except ConnectionError:
-        #logger.error("Could not connect to KR API!")
+        logger.error("Could not connect to KR API!")
         flask.render_template('error.html', error="Could not contact KR server. RIP!")
     tmpdict = {}
     for server in krdata.keys():
@@ -143,15 +139,37 @@ def get_mapinfo():
         serverid = d["ServerId"]
         servname = d["ServerName"]
         tmpdict[serverid] = {"name": servname, "mapid": int(mapid), "update": datetime.datetime.now()}
-    print(SERVERS)
     del SERVERS
     SERVERS = tmpdict.copy()
-    print(SERVERS)
     1
 
 
 if __name__ == '__main__':
-    #logger = logging.getLogger("KRmaptimes")
-    #logger.info("Starting application.")
-    app.run(host="0.0.0.0", port=5005)
+    # Reading config file
+    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as conffile:
+        config = yaml.load(conffile, Loader=yaml.FullLoader)
+    
+    # Set up logging
+    logger = logging.getLogger("KRmaptimes")
+    logger.setLevel(eval("logging." + config["loglevel"]))
+    
+    if config["logtype"] == "STDOUT":
+        logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    # YES, this totally ignores threadsafety. On the other hand, it is quite safe to assume that it only will
+    # occur very rarely that things get logged at the same time in this usecase.
+    # Furthermore, logging is absolutely not critical in this case and mostly used for debugging. As long as the
+    # SQLite DB doesn't break, we're safe!
+    elif config["logtype"] == "FILE":
+        config["logfile"] = config["logfile"].replace("~", os.getenv("HOME"))
+        if not os.path.dirname(config["logfile"]) == "" and not os.path.exists(os.path.dirname(config["logfile"])):
+            os.mkdir(os.path.dirname(config["logfile"]))
+        f = open(config["logfile"], "w+")
+        f.close()
+        logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", filename=config["logfile"])
+    else:
+        print("ERROR: Logging not correctly configured!")
+        exit(1)
+    
+    logger.info("Starting application.")
+    app.run(host=config["bind_hosts"], port=config["port"])
     #app.run()
