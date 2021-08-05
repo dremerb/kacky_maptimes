@@ -68,7 +68,13 @@ def index():
     Called by default
     :return:
     """
+    # Log visit (only for counting, no further info). Quite GDPR conform, right?
+    with open(config["visits_logfile"], "w") as vf:
+        vf.write(datetime.datetime.now().strftime("%d/%m/%y %H:%M"))
+
+    # Get page data
     curtimestr, nextmaptimestr, curmaps, timeleft = pagedata()
+    # Prepare server names
     servernames = list(map(lambda s: s["name"], SERVERS.values()))
     return flask.render_template('index.html', servs=list(zip(servernames, curmaps)), curtime=curtimestr,
                                  nextmaptime=nextmaptimestr, timeleft=timeleft)
@@ -169,6 +175,12 @@ if __name__ == '__main__':
     else:
         print("ERROR: Logging not correctly configured!")
         exit(1)
+
+    if config["log_visits"]:
+        # Enable logging of visitors to dedicated file. More comfortable than using system log to count visitors.
+        # Counting with "cat visits.log | wc -l"
+        f = open(config["visits_logfile"], "w+")
+        f.close()
     
     logger.info("Starting application.")
     app.run(host=config["bind_hosts"], port=config["port"])

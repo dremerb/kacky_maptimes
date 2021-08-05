@@ -5,6 +5,8 @@ bind_hosts: 0.0.0.0
 # APPLICATION PARAMETERS
 cachetime: 60 # seconds
 mapchangetime_s: 45
+log_visits: 1 # 0, 1
+visits_logfile: visits.log # might require absolute path
 
 # KR META INFO
 phase1timelimit: 10
@@ -16,4 +18,3 @@ compend: 31.08.2021 18:00
 logtype: FILE # STDOUT, FILE
 logfile: flask.log # might require absolute path
 loglevel: INFO # DEBUG, INFO, WARNING, ERROR, CRITICAL
-access_logging: 1 # 0, 1
