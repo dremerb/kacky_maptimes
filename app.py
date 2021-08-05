@@ -69,8 +69,9 @@ def index():
     :return:
     """
     # Log visit (only for counting, no further info). Quite GDPR conform, right?
-    with open(config["visits_logfile"], "w") as vf:
+    with open(config["visits_logfile"], "a") as vf:
         vf.write(datetime.datetime.now().strftime("%d/%m/%y %H:%M"))
+        vf.write("\n")
 
     # Get page data
     curtimestr, nextmaptimestr, curmaps, timeleft = pagedata()
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     if config["log_visits"]:
         # Enable logging of visitors to dedicated file. More comfortable than using system log to count visitors.
         # Counting with "cat visits.log | wc -l"
-        f = open(config["visits_logfile"], "w+")
+        f = open(config["visits_logfile"], "a+")
         f.close()
     
     logger.info("Starting application.")
