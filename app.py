@@ -20,6 +20,13 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
     get_mapinfo()
     curmaps = list(map(lambda s: s["mapid"], SERVERS.values()))
     deltas = []
+
+    # check if we are in phase 2
+    if datetime.datetime.now() > datetime.datetime.strptime(config["phase2start"], "%d.%m.%Y %H:%M"):
+        timelimit = config["phase2timelimit"]
+    else:
+        timelimit = config["phase1timelimit"]
+
     for idx, serv in enumerate(curmaps):
         # how many map changes are needed until map is juked?
         changes_needed = findmapid - serv
@@ -113,16 +120,10 @@ def on_map_play_search():
 
 @app.before_first_request
 def do_something_only_once():
-    global SERVERS, config, timelimit
+    global SERVERS, config
     logger.info("Initializing Data")
     # Set SERVERS var
     get_mapinfo()
-    # check if we are in phase 2
-    # TODO: FIX, this has to be checked somewhere else!
-    if datetime.datetime.now() > datetime.datetime.strptime(config["phase2start"], "%d.%m.%Y %H:%M"):
-        timelimit = config["phase2timelimit"]
-    else:
-        timelimit = config["phase1timelimit"]
 
 
 def get_mapinfo():
