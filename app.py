@@ -2,10 +2,14 @@ import datetime
 import os
 import logging
 import requests
-
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import matplotlib.dates as mdates
 import yaml
 import flask
 from flask import Flask
+import io
 
 app = Flask(__name__)
 MAPIDS = (76, 150)
@@ -149,7 +153,58 @@ def get_mapinfo():
         tmpdict[serverid] = {"name": servname, "mapid": int(mapid), "update": datetime.datetime.now()}
     del SERVERS
     SERVERS = tmpdict.copy()
-    1
+
+
+@app.route('/stats/stats.png')
+def stats_generator():
+    """
+    Build some fancy plots to see site usage
+    :return:
+    """
+    logger.info("Building figure 'stats.png'")
+    # Read data
+    df = pd.read_csv(config["visits_logfile"], sep=" ")
+    df.columns = ["dates", "times"]
+    countdatesdf = df.groupby("dates").count()
+    counttimesdf = df.groupby("times").count()
+
+    # Create Plot
+    fig, (ax, ax2) = plt.subplots(2, 1)
+
+    # first plot
+    ax.plot(countdatesdf.index, countdatesdf['times'])
+    # Format x ticks
+    # Do not use the following lines, as they break stuff. If MPL does this 
+    # automatically, it magically starts to work
+    # datesFmt = mdates.DateFormatter('%d/%m/%y')
+    # ax.xaxis.set_major_formatter(datesFmt)
+    ax.set_xticks(countdatesdf.index)
+    #plt.xticks(rotation=70)
+    ax.tick_params(axis="x", rotation=70)
+    ax.set_title("Visits per Day")
+
+    # second plot
+    ax2.bar(counttimesdf.index, counttimesdf["dates"])
+    # Do not use the following lines, as they break stuff. If MPL does this
+    # automatically, it magically starts to work
+    # ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    # ax2.set_xticks(counttimesdf.index)
+    ax2.xaxis.set_major_locator(plt.MaxNLocator(28))
+    ax2.tick_params(axis="x", rotation=70)
+    ax2.set_title("Visits by Time of Day")
+
+    plt.tight_layout()
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return flask.Response(output.getvalue(), mimetype='image/png')
+
+
+@app.route('/stats')
+def stats():
+    if config["enable_stats_page"]:
+        return flask.render_template('stats.html')
+    else:
+        return flask.render_template("error.html", error="Stats page disabled")
 
 
 if __name__ == '__main__':
