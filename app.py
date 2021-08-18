@@ -32,8 +32,8 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
         # Server IDs start with 1
         idx = idx + 1
         # how many map changes are needed until map is juked?
-        cur_pos_in_playlist = SERVERS[idx]["maplist"].index(maps[1])
-        pos_of_search_in_playlist = SERVERS[idx]["maplist"].index(findmapid)
+        cur_pos_in_playlist = SERVERS[idx]["maplist"].index(maps[1])+1
+        pos_of_search_in_playlist = SERVERS[idx]["maplist"].index(findmapid)+1
         changes_needed = pos_of_search_in_playlist - cur_pos_in_playlist
 
         if changes_needed < 0:
