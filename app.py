@@ -11,8 +11,8 @@ import flask
 from flask import Flask
 import io
 
-# app = Flask(__name__)
-app = Flask("app")
+app = Flask(__name__)
+#app = Flask("app")
 MAPIDS = (0, 1)
 SERVERS = {}
 MAPS = {}
@@ -29,11 +29,17 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
     deltas = []
 
     for idx, maps in enumerate(curmaps):
+        logger.debug(f"Searching on Server {idx} for map {findmapid}")
+        logger.debug(maps)
         # Server IDs start with 1
         idx = idx + 1
         # how many map changes are needed until map is juked?
-        cur_pos_in_playlist = SERVERS[idx]["maplist"].index(maps[1])
-        pos_of_search_in_playlist = SERVERS[idx]["maplist"].index(findmapid)
+        try:
+            cur_pos_in_playlist = SERVERS[idx]["maplist"].index(maps[1])+1
+            pos_of_search_in_playlist = SERVERS[idx]["maplist"].index(findmapid)+1
+        except Exception:
+            logger.debug(f"Exception - {findmapid} not in {SERVERS[idx]['maplist']} (maplist is of type{type(SERVERS[idx]['maplist'])}")
+            continue
         changes_needed = pos_of_search_in_playlist - cur_pos_in_playlist
 
         if changes_needed < 0:
@@ -41,13 +47,13 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
         # subtract 1, so we can land in the middle of the queue time
         # (like timer min 5, when timelimit is 10)
         changes_needed -= 1
-        minutes_time_to_juke = SERVERS[idx]["timelimit"] / 2 + \
-                               int(changes_needed * (SERVERS[idx]["timelimit"]
+        minutes_time_to_juke = int(SERVERS[idx]["timelimit"] / 2 + \
+                               changes_needed * (SERVERS[idx]["timelimit"]
                                                      + config["mapchangetime_s"] / 60))
         # date and time, when map is juked next (without compensation of minutes)
         play_time = timestamp + datetime.timedelta(
             minutes=minutes_time_to_juke)
-        deltas.append(minutes_time_to_juke)
+        deltas.append((minutes_time_to_juke, idx, maps[0]))
     return deltas
 
 
@@ -127,7 +133,7 @@ def on_map_play_search():
                                      timeleft=timeleft)
     # input seems ok, try to find next time map is played
     deltas = which_time_is_map_played(datetime.datetime.now(), search_map_id)
-    deltas_str = list(map(lambda d: minutes_to_hourmin_str(d), deltas))
+    deltas_str = list(map(lambda d: minutes_to_hourmin_str(d[0]), deltas))
 
     return flask.render_template('index.html',
                                  servs=list(zip(servernames, curmaps)),
@@ -171,11 +177,11 @@ def get_mapinfo():
         mapid = d["MapName"].split("#")[1]
         serverid = int(d["ServerId"])
         servname = d["ServerName"]
-        color = MAPS["server-colors"][str(serverid)]
+        color = MAPS["server-colors"][serverid]
         tmpdict[serverid] = {"name": servname + " - " + color,
                              "mapid": int(mapid),
                              "update": datetime.datetime.now(),
-                             "color": MAPS["server-colors"][str(serverid)],
+                             "color": MAPS["server-colors"][serverid],
                              "maplist": MAPS[color]["maps"],
                              "timelimit": MAPS[color]["timelimit"]}
     del SERVERS
@@ -243,7 +249,7 @@ if __name__ == '__main__':
     MAPIDS = (config["min_mapid"], config["max_mapid"])
 
     # Set up logging
-    logger = logging.getLogger("KRmaptimes")
+    logger = logging.getLogger("KRmaptimesiasd")
     logger.setLevel(eval("logging." + config["loglevel"]))
 
     if config["logtype"] == "STDOUT":
