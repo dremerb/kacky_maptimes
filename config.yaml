@@ -1,5 +1,5 @@
 # FLASK PARAMETERS
-port: 5005
+port: 5000
 bind_hosts: 0.0.0.0
 
 # APPLICATION PARAMETERS
