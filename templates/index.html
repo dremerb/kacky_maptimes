@@ -52,9 +52,35 @@
         <div class="server-grid">
           {% for serv in servs %}
           <div class="server-card">
-            <h3>
-              <img class="icon-small" src="/static/bare-metal-server.svg" />{{
-              serv[0] }}
+            <h3 class="server-title">
+              <img class="icon-small" src="/static/bare-metal-server.svg" />
+              <span>{{ serv[0] }}</span>
+
+              {% if serv[2] == "white" %}
+              <span class="dot" style="color: #fff">●</span>
+              <span style="color: #fff; font-weight: 900"> {{ serv[2] }} </span>
+
+              {% elif serv[2] == "green" %}
+              <span class="dot" style="color: #6efaa1">●</span>
+              <span style="color: #6efaa1; font-weight: 900"
+                >{{ serv[2] }}</span
+              >
+
+              {% elif serv[2] == "blue" %}
+              <span class="dot" style="color: #0033ff">●</span>
+              <span style="color: #0033ff; font-weight: 900">
+                {{ serv[2] }}
+              </span>
+
+              {% elif serv[2] == "red" %}
+              <span class="dot" style="color: #ff0000">●</span>
+              <span style="color: #ff0000; font-weight: 900"
+                >{{ serv[2] }}</span
+              >
+              {% else %}
+              <span class="dot" style="color: #000">●</span>
+              <span style="color: #000; font-weight: 900"> {{ serv[2] }} </span>
+              {% endif %}
             </h3>
             <p>
               <span style="color: #aa0">Kack</span
@@ -70,7 +96,10 @@
       </section>
       <section>
         <h2><img class="icon" src="/static/search.svg" />Search for a map</h2>
-        <p>Find when a map will next be played. (Estimated time, real time depends on server loading times)</p>
+        <p>
+          Find when a map will next be played. (Estimated time, real time
+          depends on server loading times)
+        </p>
         <form id="map-search" method="POST">
           <label for="map">Map #</label>
           <div id="searchbar">
@@ -96,13 +125,36 @@
         <div class="server-grid">
           {% for d in deltas %}
           <div class="server-card">
-            <h3>
-              <img
-                class="icon-small"
-                src="/static/bare-metal-server.svg"
-              />{{d[0]}}
+            <h3 class="server-title">
+              <img class="icon-small" src="/static/bare-metal-server.svg" />
+              <span>{{ d[0] }}</span>
+
+              {% if d[1] == "white" %}
+              <span class="dot" style="color: #fff">●</span>
+              <span style="color: #fff; font-weight: 900"> {{ d[1] }} </span>
+
+              {% elif d[1] == "green" %}
+              <span class="dot" style="color: #6efaa1">●</span>
+              <span style="color: #6efaa1; font-weight: 900">{{ d[1] }}</span>
+
+              {% elif d[1] == "blue" %}
+              <span class="dot" style="color: #0033ff">●</span>
+              <span style="color: #0033ff; font-weight: 900"> {{ d[1] }} </span>
+
+              {% elif d[1] == "red" %}
+              <span class="dot" style="color: #ff0000">●</span>
+              <span style="color: #ff0000; font-weight: 900">{{ d[1] }}</span>
+              {% else %}
+              <span class="dot" style="color: #000">●</span>
+              <span style="color: #000; font-weight: 900"> {{ d[1] }} </span>
+              {% endif %}
             </h3>
-            <p>{{d[1]}}</p>
+            <p id="time-left-server">
+              <span class="time">{{d[2][0]}}</span>
+              <span class="time-server-search">Hours</span>
+              <span class="time">{{d[2][1]}}</span>
+              <span class="time-server-search">Minutes</span>
+            </p>
           </div>
           {% endfor %}
         </div>

@@ -52,9 +52,10 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
 
 
 def minutes_to_hourmin_str(minutes):
+    minutes = int(minutes)
     if minutes < 10:
         return f"less than 10 minutes"
-    return f"{int(minutes / 60):0>2d} hours {minutes % 60:0>2d} minutes"
+    return (f"{int(minutes / 60):0>2d}", f"{minutes % 60:0>2d}")
 
 
 def pagedata():
@@ -92,8 +93,12 @@ def index():
     curtimestr, curmaps, timeleft = pagedata()
     # Prepare server names
     servernames = list(map(lambda s: s["name"], SERVERS.values()))
+    servercolors = list(map(lambda s: s["color"], SERVERS.values()))
+    serverinfo = list(zip(servernames, curmaps, servercolors))
+    """ serverinfo = list(zip(servernames, curmaps))
+    serverinfo = list(zip(serverinfo, servercolors)) """
     return flask.render_template('index.html',
-                                 servs=list(zip(servernames, curmaps)),
+                                 servs=serverinfo,
                                  curtime=curtimestr,
                                  timeleft=timeleft)
 
@@ -107,13 +112,15 @@ def on_map_play_search():
     curtimestr, curmaps, timeleft = pagedata()
     search_map_id = flask.request.form['map']
     servernames = list(map(lambda s: s["name"], SERVERS.values()))
+    servercolors = list(map(lambda s: s["color"], SERVERS.values()))
+    serverinfo = list(zip(servernames, curmaps, servercolors))
     # check if input is integer
     try:
         search_map_id = int(search_map_id)
     except ValueError:
         # input is not a integer, return error message
         return flask.render_template('index.html',
-                                     servs=list(zip(servernames, curmaps)),
+                                     servs=serverinfo,
                                      curtime=curtimestr,
                                      searched=True, badinput=True,
                                      timeleft=timeleft)
@@ -121,20 +128,20 @@ def on_map_play_search():
     if search_map_id < MAPIDS[0] or search_map_id > MAPIDS[1]:
         # not in current map pool
         return flask.render_template('index.html',
-                                     servs=list(zip(servernames, curmaps)),
+                                     servs=serverinfo,
                                      curtime=curtimestr,
                                      searched=True, badinput=True,
                                      timeleft=timeleft)
     # input seems ok, try to find next time map is played
     deltas = which_time_is_map_played(datetime.datetime.now(), search_map_id)
-    deltas_str = list(map(lambda d: minutes_to_hourmin_str(d), deltas))
+    deltas_tup = list(map(lambda d: minutes_to_hourmin_str(d), deltas))
 
     return flask.render_template('index.html',
-                                 servs=list(zip(servernames, curmaps)),
+                                 servs=serverinfo,
                                  curtime=curtimestr,
                                  searched=True, searchtext=search_map_id,
                                  timeleft=timeleft,
-                                 deltas=list(zip(servernames, deltas_str)))
+                                 deltas=list(zip(servernames, servercolors, deltas_tup)))
 
 
 @app.before_first_request
@@ -172,7 +179,7 @@ def get_mapinfo():
         serverid = int(d["ServerId"])
         servname = d["ServerName"]
         color = MAPS["server-colors"][str(serverid)]
-        tmpdict[serverid] = {"name": servname + " - " + color,
+        tmpdict[serverid] = {"name": servname.split("-")[1][1:],
                              "mapid": int(mapid),
                              "update": datetime.datetime.now(),
                              "color": MAPS["server-colors"][str(serverid)],
@@ -274,4 +281,4 @@ if __name__ == '__main__':
         f.close()
 
     logger.info("Starting application.")
-    app.run(host=config["bind_hosts"], port=config["port"])
+    app.run(debug=True, host=config["bind_hosts"], port=config["port"])
