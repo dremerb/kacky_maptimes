@@ -167,6 +167,20 @@ section h2 {
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
 }
 
+.server-title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dot {
+  font-size: 2rem;
+  line-height: 0px;
+  margin-bottom: 0.5rem;
+  margin-right: 0.2rem;
+  margin-left: 1rem;
+}
+
 #map-search {
   display: flex;
   align-items: center;
@@ -213,6 +227,20 @@ section h2 {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+#time-left-server {
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+}
+
+.time-server-search {
+  margin-left: -0.5rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 0.2em;
 }
 
 footer {

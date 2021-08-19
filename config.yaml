@@ -7,7 +7,7 @@ cachetime: 60 # seconds
 mapchangetime_s: 45
 log_visits: 1 # 0, 1
 visits_logfile: visits.log # might require absolute path
-enable_stats_page: False      # Turning this on provides a DDOS attack vector
+enable_stats_page: True # Turning this on provides a DDOS attack vector
 
 # KR META INFO
 phase1timelimit: 10
