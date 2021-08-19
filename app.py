@@ -161,6 +161,8 @@ def stats_generator():
     Build some fancy plots to see site usage
     :return:
     """
+    if not config["enable_stats_page"]:
+        return flask.render_template("error.html", error="Stats page disabled")
     logger.info("Building figure 'stats.png'")
     # Read data
     df = pd.read_csv(config["visits_logfile"], sep=" ")
