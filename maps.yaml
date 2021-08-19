@@ -75,8 +75,8 @@ blue:
 red:
   timelimit: 20
   maps:
-    - 76
     - 85
+    - 95
     - 111
     - 119
     - 133
@@ -89,10 +89,10 @@ red:
 black:
   timelimit: 20
   maps:
+    - 76
     - 77
     - 89
     - 91
-    - 95
     - 101
     - 114
     - 123
