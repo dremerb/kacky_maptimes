@@ -127,32 +127,32 @@
           <div class="server-card">
             <h3 class="server-title">
               <img class="icon-small" src="/static/bare-metal-server.svg" />
-              <span>{{ d[0] }}</span>
+              <span>{{ d[2] }}</span>
 
-              {% if d[1] == "white" %}
+              {% if d[2] == "white" %}
               <span class="dot" style="color: #fff">●</span>
-              <span style="color: #fff; font-weight: 900"> {{ d[1] }} </span>
+              <span style="color: #fff; font-weight: 900"> {{ d[2] }} </span>
 
-              {% elif d[1] == "green" %}
+              {% elif d[2] == "green" %}
               <span class="dot" style="color: #6efaa1">●</span>
-              <span style="color: #6efaa1; font-weight: 900">{{ d[1] }}</span>
+              <span style="color: #6efaa1; font-weight: 900">{{ d[2] }}</span>
 
-              {% elif d[1] == "blue" %}
+              {% elif d[2] == "blue" %}
               <span class="dot" style="color: #0033ff">●</span>
-              <span style="color: #0033ff; font-weight: 900"> {{ d[1] }} </span>
+              <span style="color: #0033ff; font-weight: 900"> {{ d[2] }} </span>
 
-              {% elif d[1] == "red" %}
+              {% elif d[2] == "red" %}
               <span class="dot" style="color: #ff0000">●</span>
-              <span style="color: #ff0000; font-weight: 900">{{ d[1] }}</span>
+              <span style="color: #ff0000; font-weight: 900">{{ d[2] }}</span>
               {% else %}
               <span class="dot" style="color: #000">●</span>
-              <span style="color: #000; font-weight: 900"> {{ d[1] }} </span>
+              <span style="color: #000; font-weight: 900"> {{ d[2] }} </span>
               {% endif %}
             </h3>
             <p id="time-left-server">
-              <span class="time">{{d[2][0]}}</span>
+              <span class="time">{{d[0][0]}}</span>
               <span class="time-server-search">Hours</span>
-              <span class="time">{{d[2][1]}}</span>
+              <span class="time">{{d[0][1]}}</span>
               <span class="time-server-search">Minutes</span>
             </p>
           </div>

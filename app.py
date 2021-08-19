@@ -38,8 +38,10 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
             cur_pos_in_playlist = SERVERS[idx]["maplist"].index(maps[1])+1
             pos_of_search_in_playlist = SERVERS[idx]["maplist"].index(findmapid)+1
         except Exception:
-            logger.debug(f"Exception - {findmapid} not in {SERVERS[idx]['maplist']} (maplist is of type{type(SERVERS[idx]['maplist'])}")
+            logger.debug(f"Exception - {findmapid} not in {SERVERS[idx]['maplist']} (maplist is of type {type(SERVERS[idx]['maplist'])})")
             continue
+        logger.debug(
+            f"FOUND MAP - {findmapid} not in {SERVERS[idx]['maplist']} (maplist is of type {type(SERVERS[idx]['maplist'])})")
         changes_needed = pos_of_search_in_playlist - cur_pos_in_playlist
 
         if changes_needed < 0:
@@ -53,14 +55,13 @@ def which_time_is_map_played(timestamp: datetime.datetime, findmapid: int):
         # date and time, when map is juked next (without compensation of minutes)
         play_time = timestamp + datetime.timedelta(
             minutes=minutes_time_to_juke)
-        deltas.append((minutes_time_to_juke, idx, maps[0]))
+        #              time to juke,       serverid,  server color
+        deltas.append((minutes_to_hourmin_str(minutes_time_to_juke), idx, maps[0]))
     return deltas
 
 
 def minutes_to_hourmin_str(minutes):
     minutes = int(minutes)
-    if minutes < 10:
-        return f"less than 10 minutes"
     return (f"{int(minutes / 60):0>2d}", f"{minutes % 60:0>2d}")
 
 
@@ -140,14 +141,13 @@ def on_map_play_search():
                                      timeleft=timeleft)
     # input seems ok, try to find next time map is played
     deltas = which_time_is_map_played(datetime.datetime.now(), search_map_id)
-    deltas_str = list(map(lambda d: minutes_to_hourmin_str(d[0]), deltas))
 
     return flask.render_template('index.html',
                                  servs=serverinfo,
                                  curtime=curtimestr,
                                  searched=True, searchtext=search_map_id,
                                  timeleft=timeleft,
-                                 deltas=list(zip(servernames, servercolors, deltas_tup)))
+                                 deltas=deltas)
 
 
 @app.before_first_request
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     MAPIDS = (config["min_mapid"], config["max_mapid"])
 
     # Set up logging
-    logger = logging.getLogger("KRmaptimesiasd")
+    logger = logging.getLogger("KRmaptimes")
     logger.setLevel(eval("logging." + config["loglevel"]))
 
     if config["logtype"] == "STDOUT":
