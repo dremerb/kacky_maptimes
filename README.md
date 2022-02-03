@@ -1,3 +1,7 @@
+# Deprecated
+This repo was cool and all, but for KK7 we did some clean up and moved to here: https://github.com/dremerb/kk_schedule
+
+
 # kacky_maptimes
 Webtool for KR2 - Check which maps are currently played and when a map will be played again. Also can calculate, at how long it will be until a map gets queued.
 
